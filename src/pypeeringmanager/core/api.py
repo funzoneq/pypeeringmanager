@@ -21,6 +21,8 @@ class Api(PyNetboxApi):
     :param str token: Your Peering-Manager token.
     :param bool,optional threading: Set to True to use threading in ``.all()``
         and ``.filter()`` requests.
+    :param bool,optional strict_filters: Mirror of pynetbox's option, read by
+        ``Endpoint.filter()``/``.get()``. Defaults to False (as in NetBox's API).
     :raises AttributeError: If app doesn't exist.
     :Examples:
     >>> import pypeeringmanager
@@ -32,7 +34,7 @@ class Api(PyNetboxApi):
     """
 
     def __init__(
-        self, url, token=None, threading=False,
+        self, url, token=None, threading=False, strict_filters=False,
     ):
         base_url = "{}/api".format(url if url[-1] != "/" else url[:-1])
         self.token = token
@@ -41,6 +43,10 @@ class Api(PyNetboxApi):
         self.base_url = base_url
         self.session_key = None
         self.http_session = requests.Session()
+        # pynetbox's Endpoint.filter()/.get() read api.strict_filters; this
+        # __init__ overrides pynetbox's without calling super(), so set it here
+        # to stay compatible with current pynetbox releases.
+        self.strict_filters = strict_filters
         if threading and sys.version_info.major == 2:
             raise NotImplementedError(
                 "Threaded pypeeringmanager calls not supported in Python 2"
